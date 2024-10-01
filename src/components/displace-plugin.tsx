@@ -5,7 +5,7 @@ import { useTheme } from 'next-themes'
 import { Slider } from "@/components/ui/slider"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { X, Plus, Download, Moon, Sun, ZoomIn, ZoomOut } from "lucide-react"
+import { X, Plus, Download, Moon, Sun, ZoomIn, ZoomOut, Shuffle } from "lucide-react"
 
 const effectPatterns = [
   "https://i.ibb.co/nCv2qTg/01tn.png",
@@ -187,7 +187,8 @@ export default function DisplacePlugin() {
     applyEffect()
   }, [selectedImage, selectedEffect, xShift, yShift, scale])
 
-  const handleRandom = () => {
+  const randomizeParameters = () => {
+    setSelectedEffect(Math.floor(Math.random() * (effectPatterns.length + customPatterns.length)))
     setXShift(Math.floor(Math.random() * 201) - 100)
     setYShift(Math.floor(Math.random() * 201) - 100)
     setScale(Math.random() * 4 + 1)
@@ -281,14 +282,14 @@ export default function DisplacePlugin() {
                 key={index}
                 src={pattern}
                 alt={`Effect ${index + 1}`}
-                className={`w-10 h-10 cursor-pointer  ${
+                className={`w-10 h-10 cursor-pointer rounded ${
                   selectedEffect === index ? 'ring-2 ring-primary' : ''
                 }`}
                 onClick={() => setSelectedEffect(index)}
               />
             ))}
             <button 
-              className="w-10 h-10 bg-secondary flex items-center justify-center text-muted-foreground  hover:bg-secondary/80"
+              className="w-10 h-10 bg-secondary flex items-center justify-center text-muted-foreground rounded hover:bg-secondary/80"
               onClick={() => patternInputRef.current?.click()}
             >
               <Plus className="h-4 w-4" />
@@ -304,17 +305,17 @@ export default function DisplacePlugin() {
           />
           <div className="space-y-2 mb-2">
             {[
-              { label: "X Shift", value: xShift, setValue: setXShift, min: -100, max: 100, step: 1 },
+              { label: "X", value: xShift, setValue: setXShift, min: -100, max: 100, step: 1 },
               { label: "Y Shift", value: yShift, setValue: setYShift, min: -100, max: 100, step: 1 },
               { label: "Scale", value: scale, setValue: setScale, min: 0, max: 5, step: 0.1, isScale: true }
             ].map(({ label, value, setValue, min, max, step, isScale }) => (
               <div key={label} className="flex items-center">
-                <span className="text-xs font-x w-16">{label}</span>
+                <span className="text-xs font-medium w-14">{label}</span>
                 <Input
                   type="number"
                   value={value}
                   onChange={(e) => setValue(Number(e.target.value))}
-                  className="w-12 mr-0 text-xs h-6 px-1"
+                  className="w-16 mr-2 text-xs h-6 px-1"
                   step={step.toString()}
                 />
                 <CustomSlider value={value} onChange={setValue} min={min} max={max} step={step} isScale={isScale} />
@@ -322,11 +323,18 @@ export default function DisplacePlugin() {
             ))}
           </div>
           <div className="flex-grow" />
-          <div className="flex gap-2 pb-2">
-            <Button className="flex-1 bg-secondary text-secondary-foreground hover:bg-secondary/90 text-xs h-8" onClick={handleRandom}>
+          <div className="flex gap-2 pb-2 w-full">
+            <Button 
+              className="flex-1 bg-secondary text-secondary-foreground hover:bg-secondary/90 text-xs h-8" 
+              onClick={randomizeParameters}
+            >
+              <Shuffle className="w-3 h-3 mr-1" />
               Random
             </Button>
-            <Button className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 text-xs h-8" onClick={handleDownload}>
+            <Button 
+              className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 text-xs h-8" 
+              onClick={handleDownload}
+            >
               <Download className="w-3 h-3 mr-1" />
               .png
             </Button>
