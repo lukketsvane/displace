@@ -5,10 +5,9 @@ import { ThemeProvider } from '../components/theme-provider'
 
 const inter = Inter({ subsets: ['latin'] })
 
-
 export const metadata: Metadata = {
-  title: 'Displace - Pattern Glass, Noise and Glitch Effects',
-  description: 'Create stunning visual effects with Displace',
+  title: 'Displace - Apply Amazing Dithering Effects',
+  description: 'Create stunning visual effects with Dither',
 }
 
 export default function RootLayout({
