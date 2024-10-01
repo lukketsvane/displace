@@ -1,10 +1,11 @@
 'use client'
 
 import React, { useState, useRef, useEffect } from 'react'
+import { useTheme } from 'next-themes'
 import { Slider } from "@/components/ui/slider"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { X, Plus, Download } from "lucide-react"
+import { X, Plus, Download, Moon, Sun } from "lucide-react"
 
 const effectPatterns = [
   "https://i.ibb.co/nCv2qTg/01tn.png",
@@ -32,11 +33,11 @@ interface CustomSliderProps {
 
 const CustomSlider: React.FC<CustomSliderProps> = ({ value, onChange, min, max, step, isScale = false }) => {
   const percentage = ((value - min) / (max - min)) * 100
-  const leftColor = isScale ? 'bg-gray-200' : 'bg-blue-500'
-  const rightColor = isScale ? 'bg-blue-500' : 'bg-gray-200'
+  const leftColor = isScale ? 'bg-secondary' : 'bg-primary'
+  const rightColor = isScale ? 'bg-primary' : 'bg-secondary'
 
   return (
-    <div className="relative w-full h-1 bg-gray-200 rounded-full">
+    <div className="relative w-full h-1 bg-secondary rounded-full">
       <div
         className={`absolute top-0 left-0 h-full ${leftColor} rounded-l-full`}
         style={{ width: `${isScale ? 0 : Math.min(50, percentage)}%` }}
@@ -57,7 +58,8 @@ const CustomSlider: React.FC<CustomSliderProps> = ({ value, onChange, min, max, 
   )
 }
 
-export default function Home() {
+export default function DisplacePlugin() {
+  const { theme, setTheme } = useTheme()
   const [selectedEffect, setSelectedEffect] = useState(0)
   const [xShift, setXShift] = useState(15)
   const [yShift, setYShift] = useState(0)
@@ -199,133 +201,136 @@ export default function Home() {
     }
   }
 
+  const toggleTheme = () => setTheme(theme === 'dark' ? 'light' : 'dark')
+
   return (
-    <main className="flex min-h-screen items-center justify-center bg-gray-100">
-      <div className="w-full max-w-7xl h-[calc(100vh-2rem)] m-4 bg-white rounded-lg overflow-hidden">
-        <div className="flex flex-col h-full bg-white overflow-hidden">
-          <div className="flex items-center justify-between p-4 border-b border-gray-200">
-            <h1 className="text-xl">
-              <span className="font-bold">Displace</span>
-              <span className="font-normal text-gray-500"> – pattern glass, noise and glitch effects</span>
-            </h1>
-            <button className="text-gray-500 hover:text-gray-700" onClick={removeImage}>
-              <X className="h-6 w-6" />
+    <div className="flex flex-col h-full bg-background text-foreground overflow-hidden">
+      <div className="flex items-center justify-between p-4 border-b border-border">
+        <h1 className="text-xl">
+          <span className="font-bold">Displace</span>
+          <span className="font-normal text-muted-foreground"> – pattern glass, noise and glitch effects</span>
+        </h1>
+        <div className="flex items-center space-x-2">
+          <Button variant="ghost" size="icon" onClick={toggleTheme}>
+            {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+          </Button>
+          <button className="text-muted-foreground hover:text-foreground" onClick={removeImage}>
+            <X className="h-6 w-6" />
+          </button>
+        </div>
+      </div>
+      <div className="flex flex-1 overflow-hidden">
+        <div 
+          className="flex-1 flex items-center justify-center border-r border-border cursor-pointer overflow-auto bg-card"
+          onClick={handleColumnClick}
+        >
+          {processedImage ? (
+            <img src={processedImage} alt="Processed" className="max-w-full max-h-full object-contain" />
+          ) : (
+            <img src={selectedImage} alt="Default or Selected" className="max-w-full max-h-full object-contain" />
+          )}
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleImageUpload}
+            accept="image/*"
+            className="hidden"
+            aria-label="Upload image"
+          />
+          <canvas ref={canvasRef} className="hidden" />
+        </div>
+        <div className="w-80 flex flex-col p-4 overflow-y-auto bg-card">
+          <div className="grid grid-cols-5 gap-2 mb-6">
+            {[...effectPatterns, ...customPatterns].map((pattern, index) => (
+              <img
+                key={index}
+                src={pattern}
+                alt={`Effect ${index + 1}`}
+                className={`w-12 h-12 cursor-pointer rounded ${
+                  selectedEffect === index ? 'ring-2 ring-primary' : ''
+                }`}
+                onClick={() => setSelectedEffect(index)}
+              />
+            ))}
+            <button 
+              className="w-12 h-12 bg-secondary flex items-center justify-center text-muted-foreground rounded hover:bg-secondary/80"
+              onClick={() => patternInputRef.current?.click()}
+            >
+              <Plus className="h-5 w-5" />
             </button>
           </div>
-          <div className="flex flex-1 overflow-hidden">
-            <div 
-              className="flex-1 flex items-center justify-center border-r border-gray-200 cursor-pointer overflow-auto bg-white"
-              onClick={handleColumnClick}
-            >
-              {processedImage ? (
-                <img src={processedImage} alt="Processed" className="max-w-full max-h-full object-contain" />
-              ) : (
-                <img src={selectedImage} alt="Default or Selected" className="max-w-full max-h-full object-contain" />
-              )}
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleImageUpload}
-                accept="image/*"
-                className="hidden"
-                aria-label="Upload image"
+          <input
+            type="file"
+            ref={patternInputRef}
+            onChange={handlePatternUpload}
+            accept="image/*"
+            className="hidden"
+            aria-label="Upload custom pattern"
+          />
+          <div className="flex-grow" />
+          <div className="space-y-4 mb-4">
+            <div className="flex items-center">
+              <span className="text-xs font-medium w-14">X Shift</span>
+              <Input
+                type="number"
+                value={xShift}
+                onChange={(e) => setXShift(Number(e.target.value))}
+                className="w-16 mr-2 text-xs h-6 px-1"
               />
-              <canvas ref={canvasRef} className="hidden" />
-            </div>
-            <div className="w-80 flex flex-col p-4 overflow-y-auto">
-              <div className="grid grid-cols-5 gap-2 mb-6">
-                {[...effectPatterns, ...customPatterns].map((pattern, index) => (
-                  <img
-                    key={index}
-                    src={pattern}
-                    alt={`Effect ${index + 1}`}
-                    className={`w-12 h-12 cursor-pointer rounded ${
-                      selectedEffect === index ? 'ring-2 ring-blue-500' : ''
-                    }`}
-                    onClick={() => setSelectedEffect(index)}
-                  />
-                ))}
-                <button 
-                  className="w-12 h-12 bg-white flex items-center justify-center text-gray-400 rounded hover:bg-gray-200"
-                  onClick={() => patternInputRef.current?.click()}
-                >
-                  <Plus className="h-5 w-5" />
-                </button>
-              </div>
-              <input
-                type="file"
-                ref={patternInputRef}
-                onChange={handlePatternUpload}
-                accept="image/*"
-                className="hidden"
-                aria-label="Upload custom pattern"
+              <CustomSlider
+                value={xShift}
+                onChange={setXShift}
+                min={-100}
+                max={100}
+                step={1}
               />
-              <div className="flex-grow" />
-              <div className="space-y-4 mb-4">
-                <div className="flex items-center">
-                  <span className="text-sm font-medium w-20">X Shift</span>
-                  <Input
-                    type="number"
-                    value={xShift}
-                    onChange={(e) => setXShift(Number(e.target.value))}
-                    className="w-20 mr-4 text-sm border-0 bg-white"
-                  />
-                  <CustomSlider
-                    value={xShift}
-                    onChange={setXShift}
-                    min={-100}
-                    max={100}
-                    step={1}
-                  />
-                </div>
-                <div className="flex items-center">
-                  <span className="text-sm font-medium w-20">Y Shift</span>
-                  <Input
-                    type="number"
-                    value={yShift}
-                    onChange={(e) => setYShift(Number(e.target.value))}
-                    className="w-20 mr-4 text-sm border-0 bg-white"
-                  />
-                  <CustomSlider
-                    value={yShift}
-                    onChange={setYShift}
-                    min={-100}
-                    max={100}
-                    step={1}
-                  />
-                </div>
-                <div className="flex items-center">
-                  <span className="text-sm font-medium w-20">Scale</span>
-                  <Input
-                    type="number"
-                    value={scale.toFixed(1)}
-                    onChange={(e) => setScale(Number(e.target.value))}
-                    className="w-20 mr-4 text-sm border-0 bg-white"
-                    step="0.1"
-                  />
-                  <CustomSlider
-                    value={scale}
-                    onChange={setScale}
-                    min={0}
-                    max={5}
-                    step={0.1}
-                    isScale={true}
-                  />
-                </div>
-              </div>
-              <div className="flex gap-2 pb-8">
-                <Button variant="outline" className="flex-1" onClick={handleRandom}>
-                  Random
-                </Button>
-                <Button className="flex-1 bg-blue-500 hover:bg-blue-600 text-white" onClick={handleDownload}>
-                  <Download className="w-4 h-4 mr-2" />
-                  Download
-                </Button>
-              </div>
             </div>
+            <div className="flex items-center">
+              <span className="text-xs font-medium w-14">Y Shift</span>
+              <Input
+                type="number"
+                value={yShift}
+                onChange={(e) => setYShift(Number(e.target.value))}
+                className="w-16 mr-2 text-xs h-6 px-1"
+              />
+              <CustomSlider
+                value={yShift}
+                onChange={setYShift}
+                min={-100}
+                max={100}
+                step={1}
+              />
+            </div>
+            <div className="flex items-center">
+              <span className="text-xs font-medium w-14">Scale</span>
+              <Input
+                type="number"
+                value={scale.toFixed(1)}
+                onChange={(e) => setScale(Number(e.target.value))}
+                className="w-16 mr-2 text-xs h-6 px-1"
+                step="0.1"
+              />
+              <CustomSlider
+                value={scale}
+                onChange={setScale}
+                min={0}
+                max={5}
+                step={0.1}
+                isScale={true}
+              />
+            </div>
+          </div>
+          <div className="flex gap-2 pb-8">
+            <Button variant="secondary" className="flex-1 text-xs h-8" onClick={handleRandom}>
+              Random
+            </Button>
+            <Button className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 text-xs h-8" onClick={handleDownload}>
+              <Download className="w-3 h-3 mr-1" />
+              Download
+            </Button>
           </div>
         </div>
       </div>
-    </main>
+    </div>
   )
 }

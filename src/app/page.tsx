@@ -1,16 +1,19 @@
 import dynamic from 'next/dynamic'
+import { ThemeProvider } from "@/components/theme-provider"
 
 const DisplacePlugin = dynamic(() => import('@/components/displace-plugin'), { 
   ssr: false,
-  loading: () => <p>Loading...</p>
+  loading: () => <p className="text-center p-4">Loading...</p>
 })
 
 export default function Home() {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-gray-100">
-      <div className="w-full max-w-7xl h-[calc(100vh-2rem)] m-4 bg-white rounded-lg overflow-hidden">
-        <DisplacePlugin />
-      </div>
-    </main>
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <main className="flex min-h-screen items-center justify-center bg-background">
+        <div className="w-full max-w-7xl h-[calc(100vh-2rem)] m-4 bg-card rounded-lg overflow-hidden shadow-lg">
+          <DisplacePlugin />
+        </div>
+      </main>
+    </ThemeProvider>
   )
 }

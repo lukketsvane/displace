@@ -23,7 +23,8 @@
 • Effortlessly adds depth and texture to designs
 • Compatible with Figma's collaborative features
 
-c:/Users/Shadow/Documents/GitHub/displace/
+## FILETREE
+
   ├─].next/ (ignored)
   ├─].vercel/ (ignored)
   ├─]node_modules/ (ignored)
