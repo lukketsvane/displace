@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 import React, { useState, useRef, useEffect } from 'react'
 import { Slider } from "@/components/ui/slider"
@@ -30,7 +30,34 @@ interface CustomSliderProps {
   isScale?: boolean;
 }
 
-export function DisplacePluginComponent() {
+const CustomSlider: React.FC<CustomSliderProps> = ({ value, onChange, min, max, step, isScale = false }) => {
+  const percentage = ((value - min) / (max - min)) * 100
+  const leftColor = isScale ? 'bg-gray-200' : 'bg-blue-500'
+  const rightColor = isScale ? 'bg-blue-500' : 'bg-gray-200'
+
+  return (
+    <div className="relative w-full h-1 bg-gray-200 rounded-full">
+      <div
+        className={`absolute top-0 left-0 h-full ${leftColor} rounded-l-full`}
+        style={{ width: `${isScale ? 0 : Math.min(50, percentage)}%` }}
+      ></div>
+      <div
+        className={`absolute top-0 right-0 h-full ${rightColor} rounded-r-full`}
+        style={{ width: `${isScale ? percentage : Math.max(0, percentage - 50)}%` }}
+      ></div>
+      <Slider
+        value={[value]}
+        onValueChange={(newValue) => onChange(newValue[0])}
+        min={min}
+        max={max}
+        step={step}
+        className="absolute inset-0"
+      />
+    </div>
+  )
+}
+
+export default function Home() {
   const [selectedEffect, setSelectedEffect] = useState(0)
   const [xShift, setXShift] = useState(15)
   const [yShift, setYShift] = useState(0)
@@ -172,156 +199,133 @@ export function DisplacePluginComponent() {
     }
   }
 
-  const CustomSlider: React.FC<CustomSliderProps> = ({ value, onChange, min, max, step, isScale = false }) => {
-    const percentage = ((value - min) / (max - min)) * 100
-    const leftColor = isScale ? 'bg-gray-200' : 'bg-blue-500'
-    const rightColor = isScale ? 'bg-blue-500' : 'bg-gray-200'
-
-    return (
-      <div className="relative w-full h-1 bg-gray-200 rounded-full">
-        <div
-          className={`absolute top-0 left-0 h-full ${leftColor} rounded-l-full`}
-          style={{ width: `${isScale ? 0 : Math.min(50, percentage)}%` }}
-        ></div>
-        <div
-          className={`absolute top-0 right-0 h-full ${rightColor} rounded-r-full`}
-          style={{ width: `${isScale ? percentage : Math.max(0, percentage - 50)}%` }}
-        ></div>
-        <Slider
-          value={[value]}
-          onValueChange={(newValue) => onChange(newValue[0])}
-          min={min}
-          max={max}
-          step={step}
-          className="absolute inset-0"
-        />
-      </div>
-    )
-  }
-
   return (
-    <div className="flex flex-col h-screen max-h-screen bg-white overflow-hidden">
-      <div className="flex items-center justify-between p-4 border-b border-gray-200">
-        <h1 className="text-xl">
-          <span className="font-bold">Displace</span>
-          <span className="font-normal text-gray-500"> – pattern glass, noise and glitch effects</span>
-        </h1>
-        <button className="text-gray-500 hover:text-gray-700" onClick={removeImage}>
-          <X className="h-6 w-6" />
-        </button>
-      </div>
-      <div className="flex flex-1 overflow-hidden">
-        <div 
-          className="flex-1 flex items-center justify-center border-r border-gray-200 cursor-pointer overflow-auto bg-white"
-          onClick={handleColumnClick}
-        >
-          {processedImage ? (
-            <img src={processedImage} alt="Processed" className="max-w-full max-h-full object-contain" />
-          ) : (
-            <img src={selectedImage} alt="Default or Selected" className="max-w-full max-h-full object-contain" />
-          )}
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleImageUpload}
-            accept="image/*"
-            className="hidden"
-            aria-label="Upload image"
-          />
-          <canvas ref={canvasRef} className="hidden" />
-        </div>
-        <div className="w-80 flex flex-col p-4 overflow-y-auto">
-          <div className="grid grid-cols-5 gap-2 mb-6">
-            {[...effectPatterns, ...customPatterns].map((pattern, index) => (
-              <img
-                key={index}
-                src={pattern}
-                alt={`Effect ${index + 1}`}
-                className={`w-12 h-12 cursor-pointer rounded ${
-                  selectedEffect === index ? 'ring-2 ring-blue-500' : ''
-                }`}
-                onClick={() => setSelectedEffect(index)}
-              />
-            ))}
-            <button 
-              className="w-12 h-12 bg-white flex items-center justify-center text-gray-400 rounded hover:bg-gray-200"
-              onClick={() => patternInputRef.current?.click()}
-            >
-              <Plus className="h-5 w-5" />
+    <main className="flex min-h-screen items-center justify-center bg-gray-100">
+      <div className="w-full max-w-7xl h-[calc(100vh-2rem)] m-4 bg-white rounded-lg overflow-hidden">
+        <div className="flex flex-col h-full bg-white overflow-hidden">
+          <div className="flex items-center justify-between p-4 border-b border-gray-200">
+            <h1 className="text-xl">
+              <span className="font-bold">Displace</span>
+              <span className="font-normal text-gray-500"> – pattern glass, noise and glitch effects</span>
+            </h1>
+            <button className="text-gray-500 hover:text-gray-700" onClick={removeImage}>
+              <X className="h-6 w-6" />
             </button>
           </div>
-          <input
-            type="file"
-            ref={patternInputRef}
-            onChange={handlePatternUpload}
-            accept="image/*"
-            className="hidden"
-            aria-label="Upload custom pattern"
-          />
-          <div className="flex-grow" />
-          <div className="space-y-4 mb-4">
-            <div className="flex items-center">
-              <span className="text-sm font-medium w-20">X Shift</span>
-              <Input
-                type="number"
-                value={xShift}
-                onChange={(e) => setXShift(Number(e.target.value))}
-                className="w-20 mr-4 text-sm border-0 bg-white"
+          <div className="flex flex-1 overflow-hidden">
+            <div 
+              className="flex-1 flex items-center justify-center border-r border-gray-200 cursor-pointer overflow-auto bg-white"
+              onClick={handleColumnClick}
+            >
+              {processedImage ? (
+                <img src={processedImage} alt="Processed" className="max-w-full max-h-full object-contain" />
+              ) : (
+                <img src={selectedImage} alt="Default or Selected" className="max-w-full max-h-full object-contain" />
+              )}
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleImageUpload}
+                accept="image/*"
+                className="hidden"
+                aria-label="Upload image"
               />
-              <CustomSlider
-                value={xShift}
-                onChange={setXShift}
-                min={-100}
-                max={100}
-                step={1}
-              />
+              <canvas ref={canvasRef} className="hidden" />
             </div>
-            <div className="flex items-center">
-              <span className="text-sm font-medium w-20">Y Shift</span>
-              <Input
-                type="number"
-                value={yShift}
-                onChange={(e) => setYShift(Number(e.target.value))}
-                className="w-20 mr-4 text-sm border-0 bg-white"
+            <div className="w-80 flex flex-col p-4 overflow-y-auto">
+              <div className="grid grid-cols-5 gap-2 mb-6">
+                {[...effectPatterns, ...customPatterns].map((pattern, index) => (
+                  <img
+                    key={index}
+                    src={pattern}
+                    alt={`Effect ${index + 1}`}
+                    className={`w-12 h-12 cursor-pointer rounded ${
+                      selectedEffect === index ? 'ring-2 ring-blue-500' : ''
+                    }`}
+                    onClick={() => setSelectedEffect(index)}
+                  />
+                ))}
+                <button 
+                  className="w-12 h-12 bg-white flex items-center justify-center text-gray-400 rounded hover:bg-gray-200"
+                  onClick={() => patternInputRef.current?.click()}
+                >
+                  <Plus className="h-5 w-5" />
+                </button>
+              </div>
+              <input
+                type="file"
+                ref={patternInputRef}
+                onChange={handlePatternUpload}
+                accept="image/*"
+                className="hidden"
+                aria-label="Upload custom pattern"
               />
-              <CustomSlider
-                value={yShift}
-                onChange={setYShift}
-                min={-100}
-                max={100}
-                step={1}
-              />
+              <div className="flex-grow" />
+              <div className="space-y-4 mb-4">
+                <div className="flex items-center">
+                  <span className="text-sm font-medium w-20">X Shift</span>
+                  <Input
+                    type="number"
+                    value={xShift}
+                    onChange={(e) => setXShift(Number(e.target.value))}
+                    className="w-20 mr-4 text-sm border-0 bg-white"
+                  />
+                  <CustomSlider
+                    value={xShift}
+                    onChange={setXShift}
+                    min={-100}
+                    max={100}
+                    step={1}
+                  />
+                </div>
+                <div className="flex items-center">
+                  <span className="text-sm font-medium w-20">Y Shift</span>
+                  <Input
+                    type="number"
+                    value={yShift}
+                    onChange={(e) => setYShift(Number(e.target.value))}
+                    className="w-20 mr-4 text-sm border-0 bg-white"
+                  />
+                  <CustomSlider
+                    value={yShift}
+                    onChange={setYShift}
+                    min={-100}
+                    max={100}
+                    step={1}
+                  />
+                </div>
+                <div className="flex items-center">
+                  <span className="text-sm font-medium w-20">Scale</span>
+                  <Input
+                    type="number"
+                    value={scale.toFixed(1)}
+                    onChange={(e) => setScale(Number(e.target.value))}
+                    className="w-20 mr-4 text-sm border-0 bg-white"
+                    step="0.1"
+                  />
+                  <CustomSlider
+                    value={scale}
+                    onChange={setScale}
+                    min={0}
+                    max={5}
+                    step={0.1}
+                    isScale={true}
+                  />
+                </div>
+              </div>
+              <div className="flex gap-2 pb-8">
+                <Button variant="outline" className="flex-1" onClick={handleRandom}>
+                  Random
+                </Button>
+                <Button className="flex-1 bg-blue-500 hover:bg-blue-600 text-white" onClick={handleDownload}>
+                  <Download className="w-4 h-4 mr-2" />
+                  Download
+                </Button>
+              </div>
             </div>
-            <div className="flex items-center">
-              <span className="text-sm font-medium w-20">Scale</span>
-              <Input
-                type="number"
-                value={scale.toFixed(1)}
-                onChange={(e) => setScale(Number(e.target.value))}
-                className="w-20 mr-4 text-sm border-0 bg-white"
-                step="0.1"
-              />
-              <CustomSlider
-                value={scale}
-                onChange={setScale}
-                min={0}
-                max={5}
-                step={0.1}
-                isScale={true}
-              />
-            </div>
-          </div>
-          <div className="flex gap-2 pb-8">
-            <Button variant="outline" className="flex-1" onClick={handleRandom}>
-              Random
-            </Button>
-            <Button className="flex-1 bg-blue-500 hover:bg-blue-600 text-white" onClick={handleDownload}>
-              <Download className="w-4 h-4 mr-2" />
-              Download
-            </Button>
           </div>
         </div>
       </div>
-    </div>
+    </main>
   )
 }
